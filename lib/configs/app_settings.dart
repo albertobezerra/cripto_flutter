@@ -8,5 +8,7 @@ class AppSettings extends ChangeNotifier {
       'locale': 'pt_BR',
       'name': 'R\$'
     };
+
+    //oremos
   
 }
