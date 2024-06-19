@@ -125,13 +125,13 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
                 margin: const EdgeInsets.only(top: 24),
                 child: ElevatedButton(
                   style: const ButtonStyle(
-                    backgroundColor: MaterialStatePropertyAll(Colors.amber),
-                    shape: MaterialStatePropertyAll(
+                    backgroundColor: WidgetStatePropertyAll(Colors.amber),
+                    shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(3))),
                     ),
-                    iconColor: MaterialStatePropertyAll(Colors.white),
-                    foregroundColor: MaterialStatePropertyAll(Colors.white),
+                    iconColor: WidgetStatePropertyAll(Colors.white),
+                    foregroundColor: WidgetStatePropertyAll(Colors.white),
                   ),
                   onPressed: comprar,
                   child: const Row(
