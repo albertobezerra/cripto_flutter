@@ -9,10 +9,10 @@ void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
-        create: (context) => Favoritas(),
+        create: (context) => Favoritas()
       ),
       ChangeNotifierProvider(
-        create: (context) => AppSettings(),
+        create: (context) => AppSettings()
       )
     ],
     child: const MeuAplicativo(),
