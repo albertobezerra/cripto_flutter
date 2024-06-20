@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:criptos/models/moedas.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../configs/app_settings.dart';
 
 class MoedaDetalhesPage extends StatefulWidget {
   final Moedas moeda;
@@ -20,6 +23,13 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
   final _valor = TextEditingController();
   // serve para pegar o texto inserido no campo.
   double quantidade = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    var locale = context.watch<AppSettings>().locale;
+    real = NumberFormat.currency(locale: locale['locale'], name: locale['name']);
+  }
 
   comprar() {
     if (_form.currentState!.validate()) {

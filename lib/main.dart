@@ -15,15 +15,15 @@ void main() async {
   serviços ou recursos que dependem do contexto do Flutter, 
   como o sistema de plugins ou a inicialização de bibliotecas específicas. */
 
-  WidgetsFlutterBinding.ensureInitialized;
+  WidgetsFlutterBinding.ensureInitialized();
   await HiveConfig.start();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
-        create: (context) => Favoritas()
+        create: (context) => AppSettings()
       ),
       ChangeNotifierProvider(
-        create: (context) => AppSettings()
+        create: (context) => Favoritas()
       )
     ],
     child: const MeuAplicativo(),
