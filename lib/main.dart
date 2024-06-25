@@ -1,5 +1,6 @@
 import 'package:criptos/configs/app_settings.dart';
 import 'package:criptos/configs/hive_configs.dart';
+import 'package:criptos/repositorios/conta_repositorio.dart';
 import 'package:criptos/repositorios/favoritas_repositorio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,9 @@ void main() async {
   await HiveConfig.start();
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider(
+        create: (context) => ContaRepositorio()
+      ),
       ChangeNotifierProvider(
         create: (context) => AppSettings()
       ),
