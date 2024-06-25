@@ -22,13 +22,20 @@ class ContaRepositorio extends ChangeNotifier{
   _getSaldo() async{
     db = await DB.instance.database;
     List conta = await db.query('conta', limit: 1);
-    _saldo = conta.first['saldo'];
+    if (conta.isNotEmpty) {
+      _saldo = conta.first['saldo'];
+    } else {
+      // Define um valor padrão se a consulta não retornar resultados
+      _saldo = 0;
+      // Opcionalmente, você pode inserir um registro inicial na tabela `conta`
+      await db.insert('conta', {'saldo': _saldo});
+    }
     notifyListeners();
   }
 
   setSaldo(double valor) async{
     db = await DB.instance.database;
-    db.update('conta', {
+    await db.update('conta', {
       'saldo' : valor,
     });
     _saldo = valor;
