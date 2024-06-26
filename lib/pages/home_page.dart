@@ -1,6 +1,7 @@
 import 'package:criptos/pages/moedas_page.dart';
 import 'package:flutter/material.dart';
 
+import 'carteira_page.dart';
 import 'configuracoes_page.dart';
 import 'favoritas_page.dart';
 
@@ -38,6 +39,7 @@ class _HomePageState extends State<HomePage> {
         onPageChanged: setPaginaAtual,
         children: const [
           MoedasPage(),
+          CarteiraPage(),
           FavoritasPage(),
           ConfiguracoesPage(),
         ],
@@ -46,10 +48,15 @@ class _HomePageState extends State<HomePage> {
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.black12,
         currentIndex: paginaAtual,
+        //type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
             label: 'Moedas'
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Carteira'
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
