@@ -1,3 +1,4 @@
+import 'package:criptos/repositorios/conta_repositorio.dart';
 import 'package:flutter/material.dart';
 import 'package:criptos/models/moedas.dart';
 import 'package:flutter/services.dart';
@@ -17,23 +18,23 @@ class MoedaDetalhesPage extends StatefulWidget {
 
 class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
   NumberFormat real = NumberFormat.currency(locale: 'pt_BR', name: 'R\$');
-  // usa a barra invertidar para o $ ser conhecido como texto.
   final _form = GlobalKey<FormState>();
-  // usando assim o sistema já cria uma chave aleatória para o formulario
   final _valor = TextEditingController();
-  // serve para pegar o texto inserido no campo.
   double quantidade = 0;
+  late ContaRepositorio conta;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     var locale = context.watch<AppSettings>().locale;
-    real = NumberFormat.currency(locale: locale['locale'], name: locale['name']);
+    real =
+        NumberFormat.currency(locale: locale['locale'], name: locale['name']);
   }
 
-  comprar() {
+  comprar() async {
     if (_form.currentState!.validate()) {
-      //salvar a compra
+      await conta.comprar(widget.moeda, double.parse(_valor.text));
+      if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -45,6 +46,7 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
 
   @override
   Widget build(BuildContext context) {
+    conta = Provider.of<ContaRepositorio>(context, listen: false);
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -80,7 +82,6 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
               (quantidade > 0)
                   ? SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      // assim ele fica do tamanho da coluna com base na tela.
                       child: Container(
                         alignment: Alignment.center,
                         margin: const EdgeInsets.only(bottom: 24),
@@ -116,12 +117,13 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
                     if (value!.isEmpty) {
                       return 'Informe o valor da compra';
                     } else if (double.parse(value) < 50) {
-                      return 'Compra miníma de R\$ 50.00';
+                      return 'Compra mínima de R\$ 50.00';
+                    } else if (double.parse(value) > conta.saldo) {
+                      return 'Saldo insuficiente';
                     }
                     return null;
                   },
                   onChanged: (value) {
-                    // essa acao serve para verificar o que foi digitado e retornar uma resposta
                     setState(() {
                       quantidade = (value.isEmpty)
                           ? 0
@@ -134,14 +136,13 @@ class _MoedaDetalhesPageState extends State<MoedaDetalhesPage> {
                 alignment: Alignment.bottomCenter,
                 margin: const EdgeInsets.only(top: 24),
                 child: ElevatedButton(
-                  style: const ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.amber),
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Colors.amber),
+                    shape: WidgetStateProperty.all(
+                      const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(3))),
                     ),
-                    iconColor: WidgetStatePropertyAll(Colors.white),
-                    foregroundColor: WidgetStatePropertyAll(Colors.white),
+                    foregroundColor: WidgetStateProperty.all(Colors.white),
                   ),
                   onPressed: comprar,
                   child: const Row(
