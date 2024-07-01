@@ -4,22 +4,27 @@ import 'package:criptos/repositorios/moedas_repositorio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/historico.dart';
 import '../models/posicao.dart';
 
 class ContaRepositorio extends ChangeNotifier {
   late Database db;
-  late List<Posicao> _carteira = [];
+  late final List<Posicao> _carteira = [];
+  late final List<Historico> _historico = [];
   double _saldo = 0;
 
   get saldo => _saldo;
   List<Posicao> get carteira => _carteira;
+  List<Historico> get historico => _historico;
 
   ContaRepositorio() {
     _initRepositorio();
   }
+
   _initRepositorio() async {
     await _getSaldo();
     await _getCarteira();
+    await _getHistorico();
   }
 
   _getSaldo() async {
@@ -28,9 +33,7 @@ class ContaRepositorio extends ChangeNotifier {
     if (conta.isNotEmpty) {
       _saldo = conta.first['saldo'];
     } else {
-      // Define um valor padrão se a consulta não retornar resultados
       _saldo = 0;
-      // Opcionalmente, você pode inserir um registro inicial na tabela `conta`
       await db.insert('conta', {'saldo': _saldo});
     }
     notifyListeners();
@@ -38,9 +41,7 @@ class ContaRepositorio extends ChangeNotifier {
 
   setSaldo(double valor) async {
     db = await DB.instance.database;
-    await db.update('conta', {
-      'saldo': valor,
-    });
+    await db.update('conta', {'saldo': valor});
     _saldo = valor;
     notifyListeners();
   }
@@ -48,13 +49,11 @@ class ContaRepositorio extends ChangeNotifier {
   comprar(Moedas moeda, double valor) async {
     db = await DB.instance.database;
     await db.transaction((txn) async {
-      // verificar se a moeda ja foi comprada antes
       final posicaoMoeda = await txn.query(
         'carteira',
         where: 'sigla = ?',
         whereArgs: [moeda.sigla],
       );
-      // se não tem na carteira
       if (posicaoMoeda.isEmpty) {
         await txn.insert('carteira', {
           'sigla': moeda.sigla,
@@ -65,15 +64,12 @@ class ContaRepositorio extends ChangeNotifier {
         final atual = double.parse(posicaoMoeda.first['quantidade'].toString());
         await txn.update(
           'carteira',
-          {
-            'quantidade': (atual + (valor / moeda.preco)).toString(),
-          },
+          {'quantidade': (atual + (valor / moeda.preco)).toString()},
           where: 'sigla = ?',
           whereArgs: [moeda.sigla],
         );
       }
 
-      // Inserir a compra no historico
       await txn.insert(
         'historico',
         {
@@ -86,15 +82,14 @@ class ContaRepositorio extends ChangeNotifier {
         },
       );
 
-      // Atualizar o saldo
-      await txn.update('conta', {'saldo': saldo - valor});
+      await txn.update('conta', {'saldo': _saldo - valor});
     });
     await _initRepositorio();
     notifyListeners();
   }
 
   _getCarteira() async {
-    _carteira = [];
+    _carteira.clear();
     List posicoes = await db.query('carteira');
     for (var posicao in posicoes) {
       Moedas moeda = MoedaRepositorio.tabela.firstWhere(
@@ -103,6 +98,25 @@ class ContaRepositorio extends ChangeNotifier {
       _carteira.add(Posicao(
         moeda: moeda,
         quantidade: double.parse(posicao['quantidade']),
+      ));
+    }
+    notifyListeners();
+  }
+
+  _getHistorico() async {
+    _historico.clear();
+    List operacoes = await db.query('historico');
+    for (var operacao in operacoes) {
+      Moedas moeda = MoedaRepositorio.tabela.firstWhere(
+        (m) => m.sigla == operacao['sigla'],
+      );
+      _historico.add(Historico(
+        dataOperacao:
+            DateTime.fromMillisecondsSinceEpoch(operacao['data_operacao']),
+        tipoOpreracao: operacao['tipo_operacao'],
+        moeda: moeda,
+        valor: operacao['valor'],
+        quantidade: double.parse(operacao['quantidade']),
       ));
     }
     notifyListeners();
